@@ -3,7 +3,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
 
-const API_BASE = "http://localhost:5000/api/v1/transactions";
+const API_BASE = "https://interswitch-trustclear-backend.onrender.com/api/v1/transactions";
 
 export default function CheckoutPage() {
   const [amount, setAmount] = useState("");
@@ -171,7 +171,7 @@ export default function CheckoutPage() {
       return toast.error("No transaction to file complaint");
 
     try {
-      await fetch(`http://localhost:5000/api/v1/complaints`, {
+      await fetch(`https://interswitch-trustclear-backend.onrender.com/api/v1/complaints`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

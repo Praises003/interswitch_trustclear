@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api/v1", // your backend
+  baseURL: "https://interswitch-trustclear-backend.onrender.com/api/v1", // your backend
 });
 
 export default api;

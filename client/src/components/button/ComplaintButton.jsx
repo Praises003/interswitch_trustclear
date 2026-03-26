@@ -6,7 +6,7 @@ const ComplaintButton = ({ transactionRef }) => {
   const handleComplaint = async () => {
     const userId = getUserId();
 
-    const res = await fetch("/api/complaints", {
+    const res = await fetch("https://interswitch-trustclear-backend.onrender.com/api/v1/complaints", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
