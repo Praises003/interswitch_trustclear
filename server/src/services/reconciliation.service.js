@@ -86,7 +86,7 @@ export const runReconciliation = async () => {
           fraudReasons: reasons.join(", "),
           anomalyDetected: isAnomaly,
           // 🔥 Autonomously dismiss abandoned transactions so they stop looping!
-          resolutionStatus: txn.resolutionStatus // don't touch it here
+          resolutionStatus: isAbandoned ? "EXPIRED" : txn.resolutionStatus // don't touch it here
         },
       });
 
