@@ -75,6 +75,9 @@ export const runReconciliation = async () => {
         // If Interswitch says it failed or is still pending, and the merchant doesn't have it... it's just an abandoned checkout.
       const isAbandoned = issuerStatus === "FAILED" && txn.merchantStatus !== "CONFIRMED";
 
+      const shouldExpire = isAbandoned && txn.resolutionStatus !== "REFUND_REQUIRED";
+
+
       // 3. Update everything ONCE
       const updatedTxn = await prisma.transaction.update({
         where: { transactionRef: txn.transactionRef },
@@ -86,7 +89,7 @@ export const runReconciliation = async () => {
           fraudReasons: reasons.join(", "),
           anomalyDetected: isAnomaly,
           // 🔥 Autonomously dismiss abandoned transactions so they stop looping!
-          resolutionStatus: isAbandoned ? "EXPIRED" : txn.resolutionStatus // don't touch it here
+          resolutionStatus:  txn.resolutionStatus // don't touch it here
         },
       });
 
