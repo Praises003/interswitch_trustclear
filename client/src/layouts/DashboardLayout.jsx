@@ -5,7 +5,7 @@ export default function DashboardLayout({ children }) {
     <div className="min-h-screen bg-[var(--bg)] text-white">
       <Header />
       
-      <main className="p-6 max-w-7xl mx-auto">
+      <main className="p-6 w-full max-w-none  mx-auto">
         {children}
       </main>
     </div>

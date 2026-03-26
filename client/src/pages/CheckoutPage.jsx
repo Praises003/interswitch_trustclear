@@ -13,20 +13,20 @@ export default function CheckoutPage() {
   const [scenario, setScenario] = useState("normal");
 
   // Generate or retrieve persistent userId
- const getUserId = () => {
-  let id = localStorage.getItem("userId");
-  if (!id) {
-    // Optional: check if the method exists to avoid crashing
-    if (window.crypto && window.crypto.randomUUID) {
-      id = window.crypto.randomUUID();
-    } else {
-      // Fallback to a timestamp/random string if absolutely necessary
-      id = Date.now().toString(36) + Math.random().toString(36).substring(2);
+  const getUserId = () => {
+    let id = localStorage.getItem("userId");
+    if (!id) {
+      if (window.crypto && window.crypto.randomUUID) {
+        id = window.crypto.randomUUID();
+      } else {
+        id =
+          Date.now().toString(36) +
+          Math.random().toString(36).substring(2);
+      }
+      localStorage.setItem("userId", id);
     }
-    localStorage.setItem("userId", id);
-  }
-  return id;
-};
+    return id;
+  };
 
   // Launch Interswitch checkout
   const payWithInterswitch = (txn) => {
@@ -39,7 +39,7 @@ export default function CheckoutPage() {
       merchant_code: txn.merchantCode,
       pay_item_id: txn.payItemId,
       txn_ref: txn.transactionRef,
-      amount: txn.amount, // already in kobo
+      amount: txn.amount,
       currency: 566,
       site_redirect_url: window.location.href,
 
@@ -47,17 +47,17 @@ export default function CheckoutPage() {
         toast.success("Payment done. Simulating webhook...");
         setStatus("processing");
 
-        // Determine SUCCESS/FAILED exactly like HTML demo
-        const webhookStatus = response.resp === "00" ? "SUCCESS" : "FAILED";
+        const webhookStatus =
+          response.resp === "00" ? "SUCCESS" : "FAILED";
 
-        // Simulate webhook
+        // ✅ wait for webhook
         await simulateWebhook(webhookStatus, txn.transactionRef);
 
         toast.dismiss();
         toast.success("Webhook processed");
 
-        // Fetch updated transaction after 2s
-        setTimeout(fetchStatus, 2000);
+        // ✅ fetch immediately (NO timeout)
+        await fetchStatus(txn.transactionRef);
       },
 
       onClose: () => {
@@ -75,14 +75,17 @@ export default function CheckoutPage() {
     setDetails(null);
 
     const userId = getUserId();
-    console.log(userId)
+    console.log(userId);
 
     try {
-      // 1️⃣ Create transaction in backend
       const res = await fetch(API_BASE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: Number(amount), scenario, userId }),
+        body: JSON.stringify({
+          amount: Number(amount),
+          scenario,
+          userId,
+        }),
       });
 
       const data = await res.json();
@@ -97,7 +100,6 @@ export default function CheckoutPage() {
       setCurrentRef(txn.transactionRef);
       toast.loading("Opening payment gateway...");
 
-      // 2️⃣ Launch Interswitch
       payWithInterswitch(txn);
     } catch (err) {
       console.error(err);
@@ -108,7 +110,8 @@ export default function CheckoutPage() {
 
   // Simulate webhook call
   const simulateWebhook = async (status, transactionRef) => {
-    if (!transactionRef) return toast.error("Missing transactionRef for webhook");
+    if (!transactionRef)
+      return toast.error("Missing transactionRef for webhook");
 
     try {
       const res = await fetch(`${API_BASE}/webhook`, {
@@ -130,12 +133,18 @@ export default function CheckoutPage() {
   };
 
   // Fetch transaction status from backend
-  const fetchStatus = async () => {
-    if (!currentRef) return toast.error("Cannot fetch status: missing transactionRef");
-    console.log(currentRef)
+  const fetchStatus = async (ref) => {
+    const transactionRef = ref || currentRef;
+
+    if (!transactionRef)
+      return toast.error(
+        "Cannot fetch status: missing transactionRef"
+      );
+
+    console.log(transactionRef);
 
     try {
-      const res = await fetch(`${API_BASE}/${currentRef}`);
+      const res = await fetch(`${API_BASE}/${transactionRef}`);
       if (!res.ok) throw new Error("Transaction not found");
 
       const txn = await res.json();
@@ -158,10 +167,11 @@ export default function CheckoutPage() {
   // File complaint
   const fileComplaint = async () => {
     const userId = getUserId();
-    if (!currentRef) return toast.error("No transaction to file complaint");
+    if (!currentRef)
+      return toast.error("No transaction to file complaint");
 
     try {
-      await fetch("/api/complaints", {
+      await fetch(`http://localhost:5000/api/v1/complaints`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -186,7 +196,9 @@ export default function CheckoutPage() {
         animate={{ scale: 1, opacity: 1 }}
         className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl"
       >
-        <h1 className="text-2xl font-bold text-white mb-6 text-center">💳 Smart Checkout</h1>
+        <h1 className="text-2xl font-bold text-white mb-6 text-center">
+          💳 Smart Checkout
+        </h1>
 
         <input
           type="number"
@@ -218,13 +230,19 @@ export default function CheckoutPage() {
         <div className="mt-6 text-center">
           <AnimatePresence mode="wait">
             {status === "processing" && (
-              <motion.div className="text-yellow-400">🔄 Processing payment...</motion.div>
+              <motion.div className="text-yellow-400">
+                🔄 Processing payment...
+              </motion.div>
             )}
             {status === "success" && (
-              <motion.div className="text-green-400 font-bold">✅ Payment Successful</motion.div>
+              <motion.div className="text-green-400 font-bold">
+                ✅ Payment Successful
+              </motion.div>
             )}
             {status === "failed" && (
-              <motion.div className="text-red-400 font-bold">❌ Payment Failed</motion.div>
+              <motion.div className="text-red-400 font-bold">
+                ❌ Payment Failed
+              </motion.div>
             )}
           </AnimatePresence>
         </div>
@@ -237,7 +255,9 @@ export default function CheckoutPage() {
             <p>Fraud: {details.potentialFraud ? "Yes" : "No"}</p>
             <p>Risk: {details.riskLevel}</p>
             <p>Reason: {details.fraudReasons}</p>
-            <p>Resolution: {details.resolutionStatus || "NONE"}</p>
+            <p>
+              Resolution: {details.resolutionStatus || "NONE"}
+            </p>
           </motion.div>
         )}
 

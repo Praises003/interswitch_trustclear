@@ -18,8 +18,10 @@ export default function Dashboard() {
     <ActivityFeed />
   </div>
 
-  {/* Fraud Analytics full width */}
-  <FraudAnalytics />
+  {/* FULL WIDTH SECTION */}
+  <div className="w-full col-span-3">
+    <FraudAnalytics />
+  </div>
 </div>
     </DashboardLayout>
   );
