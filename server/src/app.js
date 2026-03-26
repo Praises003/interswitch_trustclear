@@ -8,9 +8,13 @@ import complaintRoutes from "./routes/complaint.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
 
 const app = express();
+const corsOptions = {
+    origin: ['http://localhost:3000', 'http://localhost:5173', "https://interswitch-trustclear.onrender.com"],
+    credentials: true,    
+  };
 
 // Middlewares
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(morgan("dev"));
 
