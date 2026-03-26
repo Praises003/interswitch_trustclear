@@ -1,5 +1,6 @@
 // src/pages/CheckoutPage.jsx
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -11,6 +12,8 @@ export default function CheckoutPage() {
   const [details, setDetails] = useState(null);
   const [currentRef, setCurrentRef] = useState(null);
   const [scenario, setScenario] = useState("normal");
+
+   const navigate = useNavigate();
 
   // Generate or retrieve persistent userId
   const getUserId = () => {
@@ -196,9 +199,20 @@ export default function CheckoutPage() {
         animate={{ scale: 1, opacity: 1 }}
         className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl"
       >
-        <h1 className="text-2xl font-bold text-white mb-6 text-center">
-          💳 Smart Checkout
-        </h1>
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-white mb-3">
+            💳 Smart Checkout
+          </h1>
+
+          <motion.button
+            onClick={() => navigate("/")}
+            className="px-5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-sm backdrop-blur-md shadow-md"
+            whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.15)" }}
+            whileTap={{ scale: 0.95 }}
+          >
+            ⬅️ Back to Dashboard
+          </motion.button>
+        </div>
 
         <input
           type="number"
