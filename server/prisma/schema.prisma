@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+
+ // Transaction Model
+ //Represents a payment lifecycle
+ 
+model Transaction {
+  id                String   @id @default(uuid())
+  transactionRef    String   @unique
+  amount            Float
+  userId            String?
+
+  issuerStatus      String   @default("PENDING")     // PENDING | SUCCESS | FAILED
+  merchantStatus    String   @default("PENDING")     // PENDING | CONFIRMED | FAILED
+
+  scenario          String                               // normal | webhook_failure | merchant_failure
+  anomalyDetected   Boolean  @default(false)
+
+  potentialFraud    Boolean  @default(false)
+  fraudScore        Float?                                 // AI or rules-based
+  riskLevel   String?
+  fraudReasons String?
+
+  resolutionStatus  String?                                // REFUND_REQUIRED | REFUNDED
+  userFlagged Boolean @default(false)
+  reconciliationAttempts Int @default(0)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  refunds           Refund[]
+}
+
+model Refund {
+  id              String   @id @default(uuid())
+  transactionRef  String
+  amount          Float
+  status          String   // COMPLETED
+
+  createdAt       DateTime @default(now())
+
+  transaction     Transaction @relation(fields: [transactionRef], references: [transactionRef])
+}
+
+
+
+model Complaint {
+  id             Int      @id @default(autoincrement())
+  transactionRef String
+  userId         String
+  reason         String
+
+  isFalse        Boolean  @default(false) // 👈 KEY FIELD
+
+  createdAt      DateTime @default(now())
+}
